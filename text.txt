@@ -1,0 +1,26 @@
+This code Server Setup emailotp
+(Server convert to local setup)
+    1.Backend(.env,.htaccess,index)
+    2.Frontend()
+
+(local convert to Server setup)
+    1.Backend(.env,.htaccess,index)
+    2.Frontend
+        ==>npm run build
+        ==>npm install -g Serve
+        ==>npm install -g http-Server
+        ==>npm http-Server ./build 
+
+zip extract (local)
+Backend
+    cd/b_end
+    composer install
+    php artisan migrate
+    php artisan key:generate ==>create JWT token
+    
+Frontend
+    cd/f_end
+    npm install/ npm install legecy peer deps
+    npm start 
+
+
