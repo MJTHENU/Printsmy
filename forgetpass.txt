@@ -1,0 +1,74 @@
+<?php
+namespace App\Http\Controllers;
+ use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+use App\Models\Otp;
+use App\Models\User;
+use Illuminate\Support\Facades\Log;
+
+class ForgotPasswordController extends Controller
+{
+
+
+public function sendOTP(Request $request)
+{
+    // Validate the request
+    $request->validate([
+        'email' => 'required|email',
+    ]);
+
+    // Check if the email exists in the users table
+    $user = User::where('email', $request->email)->first();
+
+    if (!$user) {
+        return response()->json(['message' => 'Email not found'], 404);
+    }
+
+    // Generate a random OTP
+    $otp = mt_rand(100000, 999999);
+
+    try {
+        // Start transaction
+        DB::beginTransaction();
+
+        // Store OTP in the database
+        Otp::updateOrCreate(
+            ['email' => $request->email], // Where condition
+            ['otp' => $otp]               // Update or create with this OTP
+        );
+
+        // Commit transaction
+        DB::commit();
+
+        // Log before sending email
+        Log::info('Sending OTP email to ' . $request->email . ' with OTP: ' . $otp);
+
+        // Debug point: Before sending email
+        Log::info('About to send email', ['email' => $request->email, 'otp' => $otp]);
+
+        // Send OTP via email
+        Mail::send([], [], function ($message) use ($request, $otp) {
+            $message->to($request->email)
+                    ->subject('OTP for Password Reset')
+                    ->text("Your OTP for password reset is $otp", 'text/plain');
+        });
+
+        // Debug point: After sending email
+        Log::info('Email sent', ['email' => $request->email]);
+
+        return response()->json(['message' => 'OTP sent successfully', 'otp' => $otp]);
+
+    } catch (\Exception $e) {
+        // Log the error
+        Log::error('Failed to send OTP', ['error' => $e->getMessage()]);
+
+        // Rollback transaction in case of an error
+        DB::rollBack();
+        return response()->json(['message' => 'Failed to send OTP. Please try again later.'], 500);
+    }
+}
+
+}

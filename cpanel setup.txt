@@ -1,0 +1,15 @@
+SSH Key
+Username: id_rsa
+Password: F{T&sfAj&[TS
+
+
+
+Database: prints
+Username:printsmy
+Password:rYX#MZJo~O3p
+
+
+
+Frontend React Build file
+
+npm run build
